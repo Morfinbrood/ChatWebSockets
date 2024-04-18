@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket from "ws";
 
 interface GroupConnections {
   [groupId: string]: WebSocket[];
@@ -26,8 +26,10 @@ export class MessageService {
 
   public sendMessage(groupId: string, message: string, sender: WebSocket) {
     const connections = this.groupConnections[groupId] || [];
-    connections.forEach(connection => {
+    connections.forEach((connection) => {
       if (connection !== sender && connection.readyState === WebSocket.OPEN) {
+        console.log(`message forEach: sender: ${connection}
+        message: ${message}`);
         connection.send(message);
       }
     });
@@ -35,7 +37,9 @@ export class MessageService {
 
   public leaveGroup(groupId: string, ws: WebSocket) {
     if (this.groupConnections[groupId]) {
-      this.groupConnections[groupId] = this.groupConnections[groupId].filter(connection => connection !== ws);
+      this.groupConnections[groupId] = this.groupConnections[groupId].filter(
+        (connection) => connection !== ws
+      );
       if (this.groupConnections[groupId].length === 0) {
         delete this.groupConnections[groupId];
       }
