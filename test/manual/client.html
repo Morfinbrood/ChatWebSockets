@@ -1,39 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebSocket Chat</title>
-</head>
-<body>
-  <input type="text" id="messageInput" placeholder="Enter your message">
-  <button onclick="sendMessage()">Send</button>
-  <div id="chatMessages"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Chat</title>
+  </head>
+  <body>
+    <div
+      id="chatWindow"
+      style="
+        width: 400px;
+        height: 300px;
+        border: 1px solid black;
+        overflow-y: scroll;
+      "
+    ></div>
+    <input type="text" id="messageInput" placeholder="Enter your message" />
+    <button onclick="sendMessage()">Send</button>
 
-  <script>
-    const socket = new WebSocket('ws://localhost:3000');
+    <br /><br />
 
-    socket.addEventListener('open', () => {
-      console.log('Connected to WebSocket server');
-    });
+    <input type="text" id="groupInput" placeholder="Enter group" />
+    <button onclick="addToGroup()">Add to Group</button>
 
-    socket.addEventListener('message', (event) => {
-      const message = JSON.parse(event.data);
-      const chatMessages = document.getElementById('chatMessages');
-      const messageElement = document.createElement('div');
-      messageElement.innerText = message.text;
-      chatMessages.appendChild(messageElement);
-    });
+    <div id="connectedGroups">Connected groups:</div>
 
-    function sendMessage() {
-      const messageInput = document.getElementById('messageInput');
-      const message = {
-        type: 'message',
-        text: messageInput.value
-      };
-      socket.send(JSON.stringify(message));
-      messageInput.value = '';
-    }
-  </script>
-</body>
+    <script>
+      const socket = new WebSocket("ws://localhost:3000");
+      const chatWindow = document.getElementById("chatWindow");
+      const groupInput = document.getElementById("groupInput");
+      const connectedGroups = document.getElementById("connectedGroups");
+      let connectedGroupIds = [];
+
+      socket.addEventListener("open", () => {
+        console.log("Connected to WebSocket server");
+      });
+
+      socket.addEventListener("message", (event) => {
+        const message = JSON.parse(event.data);
+        const messageElement = document.createElement("div");
+        messageElement.innerText = message.text;
+        chatWindow.appendChild(messageElement);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      });
+
+      function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const message = {
+          type: "message",
+          groupIds: connectedGroupIds,
+          text: messageInput.value,
+        };
+        socket.send(JSON.stringify(message));
+        messageInput.value = "";
+      }
+
+      function addToGroup() {
+        const groupId = groupInput.value.trim();
+        if (groupId !== "") {
+          connectedGroupIds.push(groupId);
+          connectedGroups.innerText += ` ${groupId},`;
+          groupInput.value = "";
+        }
+      }
+    </script>
+  </body>
 </html>

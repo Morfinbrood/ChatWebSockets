@@ -26,10 +26,9 @@ export class MessageService {
 
   public sendMessage(groupId: string, message: string, sender: WebSocket) {
     const connections = this.groupConnections[groupId] || [];
+    console.log(`connections: ${connections}`);
     connections.forEach((connection) => {
       if (connection !== sender && connection.readyState === WebSocket.OPEN) {
-        console.log(`message forEach: sender: ${connection}
-        message: ${message}`);
         connection.send(message);
       }
     });
