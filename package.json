@@ -1,23 +1,24 @@
 {
   "name": "chatwebsockets",
   "version": "1.0.0",
-  "description": "Simple Chat server on websockets",
-  "main": "app.js",
+  "description": "TASK:\r Create a simple websocket server that would receive a message and send it to all websockets of a given group.\r Cover it with test",
+  "main": "index.js",
   "scripts": {
-    "test": "test"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Morfinbrood/ChatWebSockets.git"
-  },
-  "keywords": [
-    "websockets",
-    "chat"
-  ],
-  "author": "Yury Staravoitau",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Morfinbrood/ChatWebSockets/issues"
+  "dependencies": {
+    "@types/node": "^20.12.7",
+    "@types/ws": "^8.5.10",
+    "express": "^4.19.2",
+    "typescript": "^5.4.5",
+    "ws": "^8.16.0"
   },
-  "homepage": "https://github.com/Morfinbrood/ChatWebSockets#readme"
+  "devDependencies": {
+    "@types/express": "^4.17.21"
+  }
 }
