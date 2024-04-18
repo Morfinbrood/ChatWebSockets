@@ -1,0 +1,23 @@
+{
+  "name": "chatwebsockets",
+  "version": "1.0.0",
+  "description": "Simple Chat server on websockets",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Morfinbrood/ChatWebSockets.git"
+  },
+  "keywords": [
+    "websockets",
+    "chat"
+  ],
+  "author": "Yury Staravoitau",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Morfinbrood/ChatWebSockets/issues"
+  },
+  "homepage": "https://github.com/Morfinbrood/ChatWebSockets#readme"
+}
