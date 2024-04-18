@@ -2,7 +2,7 @@
   "name": "chatwebsockets",
   "version": "1.0.0",
   "description": "TASK:\r Create a simple websocket server that would receive a message and send it to all websockets of a given group.\r Cover it with test",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
