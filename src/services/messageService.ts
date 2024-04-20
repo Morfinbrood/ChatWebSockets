@@ -4,6 +4,18 @@ interface GroupConnections {
   [groupId: string]: ClientInfo[];
 }
 
+/*
+const groupConnections: GroupConnections = {
+  "group1": [
+    { client: WebSocket1, uuid: "uuid1" },
+    { client: WebSocket2, uuid: "uuid2" }
+  ],
+  "group2": [
+    { client: WebSocket3, uuid: "uuid3" }
+  ]
+};
+*/
+
 interface ClientInfo {
   client: WebSocket;
   uuid: string;
