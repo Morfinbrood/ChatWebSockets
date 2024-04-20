@@ -1,7 +1,12 @@
 import WebSocket from "ws";
 
 interface GroupConnections {
-  [groupId: string]: WebSocket[];
+  [groupId: string]: ClientInfo[];
+}
+
+interface ClientInfo {
+  client: WebSocket;
+  uuid: string;
 }
 
 export class MessageService {
@@ -17,45 +22,42 @@ export class MessageService {
     return MessageService.instance;
   }
 
-  public joinGroup(groupId: string, ws: WebSocket) {
+  public joinGroup(groupId: string, ws: WebSocket, uuid: string) {
     if (!this.groupConnections[groupId]) {
       this.groupConnections[groupId] = [];
     }
-    this.groupConnections[groupId].push(ws);
+    this.groupConnections[groupId].push({ client: ws, uuid: uuid });
   }
 
-  public sendGroupMessage(groupId: string, message: string, sender: WebSocket) {
-    console.log(
-      ` MessageService:sendGroupMessage groupId${groupId}  message: ${message} sender: ${sender}`
-    );
+  public sendGroupMessage(
+    groupId: string,
+    message: string,
+    senderUUID: string
+  ) {
     const connections = this.groupConnections[groupId] || [];
-    connections.forEach((connection) => {
-      if (connection !== sender && connection.readyState === WebSocket.OPEN) {
+    const receivers = connections.filter(
+      (clientInfo) => clientInfo.uuid !== senderUUID
+    );
+    receivers.forEach((clientInfo: ClientInfo) => {
+      const clientSocket = clientInfo.client;
+      if (clientSocket.readyState === WebSocket.OPEN) {
         const messageSending = {
           type: "message",
           text: message,
         };
-        console.log(
-          ` MessageService:sendGroupMessage for every group groupId: ${groupId}  message: ${message} sender: ${sender}`
-        );
-        console.log(` if (connection !== sender) : ${connection !== sender}`);
-        console.log(` connection: ${JSON.stringify(connection)} 
-        
-        
-        sender: ${JSON.stringify(sender)}`);
-        connection.send(JSON.stringify(messageSending));
+        clientSocket.send(JSON.stringify(messageSending));
       }
     });
   }
-
-  // public leaveGroup(groupId: string, ws: WebSocket) {
-  //   if (this.groupConnections[groupId]) {
-  //     this.groupConnections[groupId] = this.groupConnections[groupId].filter(
-  //       (connection) => connection !== ws
-  //     );
-  //     if (this.groupConnections[groupId].length === 0) {
-  //       delete this.groupConnections[groupId];
-  //     }
-  //   }
-  // }
 }
+
+// public leaveGroup(groupId: string, ws: WebSocket) {
+//   if (this.groupConnections[groupId]) {
+//     this.groupConnections[groupId] = this.groupConnections[groupId].filter(
+//       (connection) => connection !== ws
+//     );
+//     if (this.groupConnections[groupId].length === 0) {
+//       delete this.groupConnections[groupId];
+//     }
+//   }
+// }

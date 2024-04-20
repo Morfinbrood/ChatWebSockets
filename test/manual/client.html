@@ -27,8 +27,11 @@
     <div id="connectedGroups">Connected groups:</div>
 
     <script>
-      import { v4 as uuidv4 } from "uuid";
-      const uniqueId = uuidv4();
+      function generateSimpleUUID() {
+        return Math.random().toString(36).substr(2, 9);
+      }
+
+      const clientUuid = generateSimpleUUID();
       const socket = new WebSocket("ws://localhost:3000");
       const chatWindow = document.getElementById("chatWindow");
       const groupInput = document.getElementById("groupInput");
@@ -55,6 +58,7 @@
           type: "message",
           groupIds: connectedGroupIds,
           text: messageInput.value,
+          senderUUID: clientUuid,
         };
         socket.send(JSON.stringify(message));
         messageInput.value = "";
@@ -66,6 +70,7 @@
           const message = {
             type: "join",
             groupId: groupId,
+            clientUuid: clientUuid,
           };
           socket.send(JSON.stringify(message));
           connectedGroupIds.push(groupId);
@@ -87,7 +92,6 @@
           console.error("No group added yet");
           return;
         }
-        console.log(`socket.url : ${socket.url}`);
         const response = await fetch("http://localhost:3000/handleUpgrade", {
           method: "POST",
           headers: {
@@ -97,16 +101,15 @@
             type: "message",
             groupIds: connectedGroupIds,
             message: message,
-            senderWebSocketID: uniqueId,
+            senderUUID: clientUuid,
           }),
         });
 
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-
+        messageInput.value = "";
         const data = response.json();
-        console.log("HTTP Request sent successfully:", data);
       }
     </script>
   </body>

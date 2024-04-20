@@ -24,13 +24,14 @@ wss.on("connection", (ws: WebSocket) => {
 
     if (message.type === "join") {
       const groupId = message.groupId;
-      messageService.joinGroup(groupId, ws);
+      const clientUuid = message.clientUuid; // Получаем clientUuid
+      messageService.joinGroup(groupId, ws, clientUuid);
     } else if (message.type === "message") {
       groupIds = message.groupIds;
       if (groupIds) {
         const text = String(message.text);
         groupIds.forEach((groupId) =>
-          messageService.sendGroupMessage(groupId, text, ws)
+          messageService.sendGroupMessage(groupId, text, message.senderUUID)
         );
       }
     } else {
@@ -48,12 +49,12 @@ wss.on("connection", (ws: WebSocket) => {
 
 app.post("/handleUpgrade", (req, res) => {
   const groupIds = req.body.groupIds;
-  const message = String(req.body.message);
-  const senderWebSocket = req.body.senderWebSocket;
+  const text = String(req.body.message);
+  const senderUUID = req.body.senderUUID;
 
   if (groupIds) {
     groupIds.forEach((groupId: string) =>
-      messageService.sendGroupMessage(groupId, message, senderWebSocket)
+      messageService.sendGroupMessage(groupId, text, senderUUID)
     );
   }
 
