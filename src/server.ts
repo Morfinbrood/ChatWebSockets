@@ -47,10 +47,9 @@ wss.on("connection", (ws: WebSocket) => {
 });
 
 app.post("/handleUpgrade", (req, res) => {
-  console.log(`req: ${JSON.stringify(req.body)}`);
   const groupIds = req.body.groupIds;
   const message = String(req.body.message);
-  const senderWebSocket = req.body.wss;
+  const senderWebSocket = req.body.senderWebSocket;
 
   if (groupIds) {
     groupIds.forEach((groupId: string) =>

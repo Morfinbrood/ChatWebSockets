@@ -27,6 +27,8 @@
     <div id="connectedGroups">Connected groups:</div>
 
     <script>
+      import { v4 as uuidv4 } from "uuid";
+      const uniqueId = uuidv4();
       const socket = new WebSocket("ws://localhost:3000");
       const chatWindow = document.getElementById("chatWindow");
       const groupInput = document.getElementById("groupInput");
@@ -85,10 +87,7 @@
           console.error("No group added yet");
           return;
         }
-
-        console.log(
-          `client message: ${message} groupIds: ${connectedGroupIds}`
-        );
+        console.log(`socket.url : ${socket.url}`);
         const response = await fetch("http://localhost:3000/handleUpgrade", {
           method: "POST",
           headers: {
@@ -98,6 +97,7 @@
             type: "message",
             groupIds: connectedGroupIds,
             message: message,
+            senderWebSocketID: uniqueId,
           }),
         });
 

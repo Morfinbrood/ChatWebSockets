@@ -39,6 +39,10 @@ export class MessageService {
           ` MessageService:sendGroupMessage for every group groupId: ${groupId}  message: ${message} sender: ${sender}`
         );
         console.log(` if (connection !== sender) : ${connection !== sender}`);
+        console.log(` connection: ${JSON.stringify(connection)} 
+        
+        
+        sender: ${JSON.stringify(sender)}`);
         connection.send(JSON.stringify(messageSending));
       }
     });
