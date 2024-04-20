@@ -16,28 +16,25 @@ wss.on("connection", (ws: WebSocket) => {
   console.log(`connection WebSocket: ${ws}`);
 
   ws.on("message", (messageData: any) => {
-    console.log(
-      `new messageData: ${JSON.stringify(
-        messageData
-      ).toString()}  groupIds: ${JSON.stringify(messageData.groupIds)}`
-    );
+    let message;
+    try {
+      message = JSON.parse(messageData.toString());
+    } catch (error) {
+      console.error("Error parsing message:", error);
+      return;
+    }
 
-    console.log(
-      `messageData instanceof Buffer : ${messageData instanceof Buffer}`
-    );
+    console.log(`Received message:`, message);
 
-    console.log(`dublicate messageData: ${messageData}`);
-
-    console.log(`typeOf MessageData ${typeof messageData}`);
-    if (messageData.type === "join") {
-      groupIds = messageData.groupIds;
-      groupIds.forEach((groupId) => messageService.joinGroup(groupId, ws));
-    } else if (messageData.type === "message") {
+    if (message.type === "join") {
+      const groupId = message.groupId;
+      messageService.joinGroup(groupId, ws);
+    } else if (message.type === "message") {
       if (groupIds) {
         console.log(
           `sending message to others clients with this groupIds: ${groupIds}`
         );
-        const text = JSON.parse(messageData.text.toString());
+        const text = JSON.parse(message.text.toString());
         groupIds.forEach((groupId) =>
           messageService.sendMessage(groupId, text, ws)
         );
@@ -47,10 +44,10 @@ wss.on("connection", (ws: WebSocket) => {
     }
   });
 
-  ws.on("close", () => {
-    groupIds.forEach((groupId) => {
-      console.log(`close connection with groupIds: ${groupId}`);
-      messageService.leaveGroup(groupId, ws);
-    });
-  });
+  // ws.on("close", () => {
+  //   groupIds.forEach((groupId) => {
+  //     console.log(`close connection with groupIds: ${groupId}`);
+  //     messageService.leaveGroup(groupId, ws);
+  //   });
+  // });
 });

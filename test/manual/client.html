@@ -58,6 +58,11 @@
       function addToGroup() {
         const groupId = groupInput.value.trim();
         if (groupId !== "") {
+          const message = {
+            type: "join",
+            groupId: groupId,
+          };
+          socket.send(JSON.stringify(message));
           connectedGroupIds.push(groupId);
           connectedGroups.innerText += ` ${groupId},`;
           groupInput.value = "";
