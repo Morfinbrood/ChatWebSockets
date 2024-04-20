@@ -17,6 +17,7 @@
     ></div>
     <input type="text" id="messageInput" placeholder="Enter your message" />
     <button onclick="sendMessage()">Send</button>
+    <button onclick="sendHttpRequest()">Send HTTP Request</button>
 
     <br /><br />
 
@@ -69,6 +70,43 @@
           connectedGroups.innerText += ` ${groupId},`;
           groupInput.value = "";
         }
+      }
+
+      async function sendHttpRequest() {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value.trim();
+
+        if (message === "") {
+          console.error("Message input is empty");
+          return;
+        }
+
+        if (!connectedGroupIds) {
+          console.error("No group added yet");
+          return;
+        }
+
+        console.log(
+          `client message: ${message} groupIds: ${connectedGroupIds}`
+        );
+        const response = await fetch("http://localhost:3000/handleUpgrade", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: "message",
+            groupIds: connectedGroupIds,
+            message: message,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = response.json();
+        console.log("HTTP Request sent successfully:", data);
       }
     </script>
   </body>

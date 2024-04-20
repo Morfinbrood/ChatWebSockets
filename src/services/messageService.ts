@@ -24,7 +24,10 @@ export class MessageService {
     this.groupConnections[groupId].push(ws);
   }
 
-  public sendMessage(groupId: string, message: string, sender: WebSocket) {
+  public sendGroupMessage(groupId: string, message: string, sender: WebSocket) {
+    console.log(
+      ` MessageService:sendGroupMessage groupId${groupId}  message: ${message} sender: ${sender}`
+    );
     const connections = this.groupConnections[groupId] || [];
     connections.forEach((connection) => {
       if (connection !== sender && connection.readyState === WebSocket.OPEN) {
@@ -32,6 +35,10 @@ export class MessageService {
           type: "message",
           text: message,
         };
+        console.log(
+          ` MessageService:sendGroupMessage for every group groupId: ${groupId}  message: ${message} sender: ${sender}`
+        );
+        console.log(` if (connection !== sender) : ${connection !== sender}`);
         connection.send(JSON.stringify(messageSending));
       }
     });
