@@ -17,9 +17,13 @@ wss.on("connection", (ws: WebSocket) => {
 
   ws.on("message", (messageData: any) => {
     console.log(
-      `new messageData: ${messageData}  groupIds: ${JSON.stringify(
-        messageData.groupIds
-      )}`
+      `new messageData: ${JSON.stringify(
+        messageData
+      ).toString()}  groupIds: ${JSON.stringify(messageData.groupIds)}`
+    );
+
+    console.log(
+      `messageData instanceof Buffer : ${messageData instanceof Buffer}`
     );
 
     console.log(`dublicate messageData: ${messageData}`);
