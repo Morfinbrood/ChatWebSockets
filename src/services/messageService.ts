@@ -26,22 +26,25 @@ export class MessageService {
 
   public sendMessage(groupId: string, message: string, sender: WebSocket) {
     const connections = this.groupConnections[groupId] || [];
-    console.log(`connections: ${connections}`);
     connections.forEach((connection) => {
       if (connection !== sender && connection.readyState === WebSocket.OPEN) {
-        connection.send(message);
+        const messageSending = {
+          type: "message",
+          text: message,
+        };
+        connection.send(JSON.stringify(messageSending));
       }
     });
   }
 
-  public leaveGroup(groupId: string, ws: WebSocket) {
-    if (this.groupConnections[groupId]) {
-      this.groupConnections[groupId] = this.groupConnections[groupId].filter(
-        (connection) => connection !== ws
-      );
-      if (this.groupConnections[groupId].length === 0) {
-        delete this.groupConnections[groupId];
-      }
-    }
-  }
+  // public leaveGroup(groupId: string, ws: WebSocket) {
+  //   if (this.groupConnections[groupId]) {
+  //     this.groupConnections[groupId] = this.groupConnections[groupId].filter(
+  //       (connection) => connection !== ws
+  //     );
+  //     if (this.groupConnections[groupId].length === 0) {
+  //       delete this.groupConnections[groupId];
+  //     }
+  //   }
+  // }
 }

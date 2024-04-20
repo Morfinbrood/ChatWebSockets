@@ -38,10 +38,12 @@
 
       socket.addEventListener("message", (event) => {
         const message = JSON.parse(event.data);
-        const messageElement = document.createElement("div");
-        messageElement.innerText = message.text;
-        chatWindow.appendChild(messageElement);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        if (message.type === "message") {
+          const messageElement = document.createElement("div");
+          messageElement.innerText = String(message.text);
+          chatWindow.appendChild(messageElement);
+          chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
       });
 
       function sendMessage() {
