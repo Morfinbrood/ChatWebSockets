@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import { Request, Response } from "express";
 
 import { JoinMessage, RegularMessage } from "../types";
-import { ClientInfo, GroupConnections } from "../models/interfaces";
+import { ClientInfo, GroupConnections } from "../interfaces";
 
 export class MessageService {
   private static instance: MessageService;
