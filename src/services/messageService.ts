@@ -55,36 +55,36 @@ export class MessageService {
     }
   };
 
-  private handleJoinMessage = (messageParsed: JoinMessage, ws: WebSocket) => {
-    const { groupId, senderUUID } = messageParsed;
-    this.joinGroup(groupId, ws, senderUUID);
-  };
-
-  private handleRegularMessage = (messageParsed: RegularMessage) => {
-    const { groupIds, text, senderUUID } = messageParsed;
-    if (groupIds && groupIds.length > 0) {
-      this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
-    } else {
-      console.log(`No groupIds provided`);
-    }
-  };
-
-  public handleHTTPMessage = (req: Request, res: Response) => {
-    const { groupIds, text, senderUUID } = req.body;
-
-    if (groupIds) {
-      this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
-    }
-
-    res.json({ status: "success" });
-  };
-
   public joinGroup(groupId: string, ws: WebSocket, uuid: string) {
     if (!this.groupConnections[groupId]) {
       this.groupConnections[groupId] = [];
     }
     this.groupConnections[groupId].push({ client: ws, uuid: uuid });
   }
+
+  public handleHTTPMessage = (req: Request, res: Response) => {
+    this.handleRegularMessage(req.body as RegularMessage);
+    res.json({ status: "success" });
+  };
+
+  private handleJoinMessage = (
+    { groupId, senderUUID }: JoinMessage,
+    ws: WebSocket
+  ) => {
+    this.joinGroup(groupId, ws, senderUUID);
+  };
+
+  private handleRegularMessage = ({
+    groupIds,
+    text,
+    senderUUID,
+  }: RegularMessage) => {
+    if (groupIds && groupIds.length > 0) {
+      this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
+    } else {
+      console.log(`No groupIds provided`);
+    }
+  };
 
   public sendMessageToAllSenderGroupsOnce(
     groupIds: string[],
