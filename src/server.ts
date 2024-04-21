@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import WebSocket from "ws";
 import { MessageService } from "./services/messageService";
 import cors from "cors";
@@ -9,9 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const messageService = MessageService.getInstance(wss);
@@ -24,7 +23,7 @@ wss.on("connection", (ws: WebSocket) => {
 
     if (message.type === "join") {
       const groupId = message.groupId;
-      const clientUuid = message.clientUuid; // Получаем clientUuid
+      const clientUuid = message.clientUuid;
       messageService.joinGroup(groupId, ws, clientUuid);
     } else if (message.type === "message") {
       groupIds = message.groupIds;
@@ -59,4 +58,8 @@ app.post("/sendHTTPMessage", (req, res) => {
   }
 
   res.json({ status: "success" });
+});
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
