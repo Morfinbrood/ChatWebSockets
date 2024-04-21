@@ -21,8 +21,6 @@ wss.on("connection", (ws: WebSocket) => {
   ws.on("message", (messageData: MessageData) => {
     messageService.handleSocketMessage(ws, messageData);
   });
-
-  // ws.on("close", () => {});
 });
 
 app.post("/sendHTTPMessage", (req, res) => {

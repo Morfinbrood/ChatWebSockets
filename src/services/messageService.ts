@@ -47,9 +47,7 @@ export class MessageService {
       const { groupIds } = messageParsed;
       if (groupIds) {
         const { text, senderUUID } = messageParsed;
-        groupIds.forEach((groupId: string) =>
-          this.sendGroupMessage(groupId, text, senderUUID)
-        );
+        this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
       }
     } else {
       console.log(`unknown message.type`);
@@ -60,9 +58,7 @@ export class MessageService {
     const { groupIds, text, senderUUID } = req.body;
 
     if (groupIds) {
-      groupIds.forEach((groupId: string) =>
-        this.sendGroupMessage(groupId, text, senderUUID)
-      );
+      this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
     }
 
     res.json({ status: "success" });
@@ -75,31 +71,68 @@ export class MessageService {
     this.groupConnections[groupId].push({ client: ws, uuid: uuid });
   }
 
-  public sendGroupMessage(groupId: string, text: string, senderUUID: string) {
-    const connections = this.groupConnections[groupId] || [];
-    const receivers = connections.filter(
-      (clientInfo) => clientInfo.uuid !== senderUUID
-    );
-    receivers.forEach((clientInfo: ClientInfo) => {
-      const clientSocket = clientInfo.client;
-      if (clientSocket.readyState === WebSocket.OPEN) {
-        const messageSending = {
-          type: "message",
-          text: text,
-        };
-        clientSocket.send(JSON.stringify(messageSending));
+  public sendMessageToAllSenderGroupsOnce(
+    groupIds: string[],
+    text: string,
+    senderUUID: string
+  ) {
+    const uniqueReceiversUUDIs: Set<string> = new Set();
+
+    groupIds.forEach((groupId: string) => {
+      const connections = this.groupConnections[groupId] || [];
+      connections.forEach((clientInfo: ClientInfo) => {
+        if (clientInfo.uuid !== senderUUID) {
+          uniqueReceiversUUDIs.add(clientInfo.uuid);
+        }
+      });
+    });
+
+    uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
+      if (receiverUUID !== senderUUID) {
+        const [clientInfo] = Object.values(this.groupConnections)
+          .flat()
+          .filter((client) => client.uuid === receiverUUID);
+        if (clientInfo) {
+          const clientSocket = clientInfo.client;
+          if (clientSocket.readyState === WebSocket.OPEN) {
+            const messageSending = {
+              type: "message",
+              text: text,
+            };
+            clientSocket.send(JSON.stringify(messageSending));
+          }
+        }
       }
     });
   }
 }
 
-// public leaveGroup(groupId: string, ws: WebSocket) {
-//   if (this.groupConnections[groupId]) {
-//     this.groupConnections[groupId] = this.groupConnections[groupId].filter(
-//       (connection) => connection !== ws
-//     );
-//     if (this.groupConnections[groupId].length === 0) {
-//       delete this.groupConnections[groupId];
-//     }
-//   }
-// }
+/* example values.flat.find
+this.groupConnections example
+const groupConnections = {
+  "group1": [
+    { client: "Client1", uuid: "uuid1" },
+    { client: "Client2", uuid: "uuid2" }
+  ],
+  "group2": [
+    { client: "Client3", uuid: "uuid3" }
+  ]
+};
+Object.values (this.groupConnections) result
+[
+  [
+    { client: "Client1", uuid: "uuid1" },
+    { client: "Client2", uuid: "uuid2" }
+  ],
+  [
+    { client: "Client3", uuid: "uuid3" }
+  ]
+]
+ .flat() result
+[
+  { client: "Client1", uuid: "uuid1" },
+  { client: "Client2", uuid: "uuid2" },
+  { client: "Client3", uuid: "uuid3" }
+]
+
+*/
