@@ -1,6 +1,8 @@
 import WebSocket from "ws";
 import { Request, Response } from "express";
 
+import { MessageData } from "../types";
+
 interface GroupConnections {
   [groupId: string]: ClientInfo[];
 }
@@ -35,17 +37,18 @@ export class MessageService {
     return MessageService.instance;
   }
 
-  public handleSocketMessage = (ws: WebSocket, messageData: any) => {
-    let message = JSON.parse(messageData.toString());
+  public handleSocketMessage = (ws: WebSocket, messageData: MessageData) => {
+    let messageParsed = JSON.parse(messageData.toString());
 
-    if (message.type === "join") {
-      const { groupId, senderUUID } = message;
+    if (messageParsed.type === "join") {
+      const { groupId, senderUUID } = messageParsed;
       this.joinGroup(groupId, ws, senderUUID);
-    } else if (message.type === "message") {
-      const { groupIds, text } = message;
+    } else if (messageParsed.type === "message") {
+      const { groupIds } = messageParsed;
       if (groupIds) {
+        const { text, senderUUID } = messageParsed;
         groupIds.forEach((groupId: string) =>
-          this.sendGroupMessage(groupId, text, message.senderUUID)
+          this.sendGroupMessage(groupId, text, senderUUID)
         );
       }
     } else {
