@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import { Request, Response } from "express";
 
 interface GroupConnections {
   [groupId: string]: ClientInfo[];
@@ -33,6 +34,38 @@ export class MessageService {
     }
     return MessageService.instance;
   }
+
+  public handleSocketMessage = (ws: WebSocket, messageData: any) => {
+    let message = JSON.parse(messageData.toString());
+
+    if (message.type === "join") {
+      const groupId = message.groupId;
+      const clientUuid = message.clientUuid;
+      this.joinGroup(groupId, ws, clientUuid);
+    } else if (message.type === "message") {
+      const groupIds: string[] = message.groupIds;
+      if (groupIds) {
+        const text = String(message.text);
+        groupIds.forEach((groupId) =>
+          this.sendGroupMessage(groupId, text, message.senderUUID)
+        );
+      }
+    } else {
+      console.log(`unknown message.type`);
+    }
+  };
+
+  public handleHTTPMessage = (req: Request, res: Response) => {
+    const { groupIds, message, senderUUID } = req.body;
+
+    if (groupIds) {
+      groupIds.forEach((groupId: string) =>
+        this.sendGroupMessage(groupId, message, senderUUID)
+      );
+    }
+
+    res.json({ status: "success" });
+  };
 
   public joinGroup(groupId: string, ws: WebSocket, uuid: string) {
     if (!this.groupConnections[groupId]) {

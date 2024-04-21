@@ -16,48 +16,15 @@ const wss = new WebSocket.Server({ server });
 const messageService = MessageService.getInstance(wss);
 
 wss.on("connection", (ws: WebSocket) => {
-  let groupIds: string[];
-
   ws.on("message", (messageData: any) => {
-    let message = JSON.parse(messageData.toString());
-
-    if (message.type === "join") {
-      const groupId = message.groupId;
-      const clientUuid = message.clientUuid;
-      messageService.joinGroup(groupId, ws, clientUuid);
-    } else if (message.type === "message") {
-      groupIds = message.groupIds;
-      if (groupIds) {
-        const text = String(message.text);
-        groupIds.forEach((groupId) =>
-          messageService.sendGroupMessage(groupId, text, message.senderUUID)
-        );
-      }
-    } else {
-      console.log(`unknown message.type`);
-    }
+    messageService.handleSocketMessage(ws, messageData);
   });
 
-  // ws.on("close", () => {
-  //   groupIds.forEach((groupId) => {
-  //     console.log(`close connection with groupIds: ${groupId}`);
-  //     messageService.leaveGroup(groupId, ws);
-  //   });
-  // });
+  // ws.on("close", () => {});
 });
 
 app.post("/sendHTTPMessage", (req, res) => {
-  const groupIds = req.body.groupIds;
-  const text = String(req.body.message);
-  const senderUUID = req.body.senderUUID;
-
-  if (groupIds) {
-    groupIds.forEach((groupId: string) =>
-      messageService.sendGroupMessage(groupId, text, senderUUID)
-    );
-  }
-
-  res.json({ status: "success" });
+  messageService.handleHTTPMessage(req, res);
 });
 
 server.listen(PORT, () => {
