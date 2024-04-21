@@ -17,13 +17,10 @@ export class MessageService {
     return MessageService.instance;
   }
 
-  public handleSocketMessage(
-    ws: WebSocket,
-    messageData: JoinMessage | RegularMessage
-  ) {
+  public handleSocketMessage(ws: WebSocket, messageData: JoinMessage | RegularMessage) {
     let messageParsed = JSON.parse(messageData.toString());
-    const { senderUUID } = messageParsed;
-    switch (messageParsed.type) {
+    const { senderUUID, type } = messageParsed;
+    switch (type) {
       case "join":
         const { groupId } = messageParsed;
         this.handleJoinMessage(groupId, senderUUID, ws);
@@ -51,19 +48,11 @@ export class MessageService {
     res.json({ status: "success" });
   }
 
-  private handleJoinMessage(
-    groupId: string,
-    senderUUID: string,
-    ws: WebSocket
-  ) {
+  private handleJoinMessage(groupId: string, senderUUID: string, ws: WebSocket) {
     this.joinGroup(groupId, ws, senderUUID);
   }
 
-  private handleRegularMessage(
-    groupIds: string[],
-    text: string,
-    senderUUID: string
-  ) {
+  private handleRegularMessage(groupIds: string[], text: string, senderUUID: string) {
     if (groupIds && groupIds.length > 0) {
       this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
     } else {
@@ -71,43 +60,45 @@ export class MessageService {
     }
   }
 
-  public sendMessageToAllSenderGroupsOnce(
-    groupIds: string[],
-    text: string,
-    senderUUID: string
-  ) {
-    const uniqueReceiversUUDIs = this.getUniqueReceiversUUIDs(
-      groupIds,
-      senderUUID
-    );
+  public sendMessageToAllSenderGroupsOnce(groupIds: string[], text: string, senderUUID: string) {
+    const uniqueReceiversUUDIs = this.getUniqueReceiversFromAllSenderGroups(groupIds, senderUUID);
     uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
       this.sendMessageToOnlineRecievers(receiverUUID, text, senderUUID);
     });
   }
 
-  private getUniqueReceiversUUIDs(
-    groupIds: string[],
-    senderUUID: string
-  ): Set<string> {
-    const uniqueReceiversUUDIs: Set<string> = new Set();
+  /*
+example data: GroupConnections = {
+  "group1": [
+    { client: WebSocket1, uuid: "uuid1" },
+    { client: WebSocket2, uuid: "uuid2" }
+  ],
+  "group2": [
+    { client: WebSocket1, uuid: "uuid1" },
+    { client: WebSocket2, uuid: "uuid2" }
+  ],
+  "group3": [
+    { client: WebSocket1, uuid: "uuid1" }
+  ],
+};
+*/
 
-    groupIds.forEach((groupId: string) => {
+  private getUniqueReceiversFromAllSenderGroups(groupIds: string[], senderUUID: string): Set<string> {
+    const uniqueReceiversUUIDs: Set<string> = new Set();
+
+    groupIds.forEach((groupId) => {
       const connections = this.groupConnections[groupId] || [];
-      connections.forEach((clientInfo: ClientInfo) => {
+      connections.forEach((clientInfo) => {
         if (clientInfo.uuid !== senderUUID) {
-          uniqueReceiversUUDIs.add(clientInfo.uuid);
+          uniqueReceiversUUIDs.add(clientInfo.uuid);
         }
       });
     });
 
-    return uniqueReceiversUUDIs;
+    return uniqueReceiversUUIDs;
   }
 
-  private sendMessageToOnlineRecievers(
-    receiverUUID: string,
-    text: string,
-    senderUUID: string
-  ) {
+  private sendMessageToOnlineRecievers(receiverUUID: string, text: string, senderUUID: string) {
     if (receiverUUID !== senderUUID) {
       const [clientInfo] = Object.values(this.groupConnections)
         .flat()

@@ -37,17 +37,10 @@ const groupConnections: GroupConnections = {
 
 export interface MessageService {
   getInstance(wss: WebSocket.Server): MessageService;
-  handleSocketMessage(
-    ws: WebSocket,
-    messageData: JoinMessage | RegularMessage
-  ): void;
+  handleSocketMessage(ws: WebSocket, messageData: JoinMessage | RegularMessage): void;
   joinGroup(groupId: string, ws: WebSocket, uuid: string): void;
   handleHTTPMessage(req: Request, res: Response): void;
   handleJoinMessage(messageParsed: JoinMessage, ws: WebSocket): void;
   handleRegularMessage(messageParsed: RegularMessage): void;
-  sendMessageToAllSenderGroupsOnce(
-    groupIds: string[],
-    text: string,
-    senderUUID: string
-  ): void;
+  sendMessageToAllSenderGroupsOnce(groupIds: string[], text: string, senderUUID: string): void;
 }
