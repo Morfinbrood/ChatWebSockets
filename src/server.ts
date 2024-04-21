@@ -47,7 +47,7 @@ wss.on("connection", (ws: WebSocket) => {
   // });
 });
 
-app.post("/handleUpgrade", (req, res) => {
+app.post("/sendHTTPMessage", (req, res) => {
   const groupIds = req.body.groupIds;
   const text = String(req.body.message);
   const senderUUID = req.body.senderUUID;

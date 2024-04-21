@@ -16,8 +16,8 @@
       "
     ></div>
     <input type="text" id="messageInput" placeholder="Enter your message" />
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="sendHttpRequest()">Send HTTP Request</button>
+    <button onclick="sendMessage()">Send WS message</button>
+    <button onclick="sendHttpRequest()">Send HTTP message</button>
 
     <br /><br />
 
@@ -82,17 +82,7 @@
       async function sendHttpRequest() {
         const messageInput = document.getElementById("messageInput");
         const message = messageInput.value.trim();
-
-        if (message === "") {
-          console.error("Message input is empty");
-          return;
-        }
-
-        if (!connectedGroupIds) {
-          console.error("No group added yet");
-          return;
-        }
-        const response = await fetch("http://localhost:3000/handleUpgrade", {
+        const response = await fetch("http://localhost:3000/sendHTTPMessage", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
