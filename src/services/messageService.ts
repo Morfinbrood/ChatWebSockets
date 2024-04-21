@@ -55,7 +55,7 @@ export class MessageService {
     }
   };
 
-  handleJoinMessage = (messageParsed: JoinMessage, ws: WebSocket) => {
+  private handleJoinMessage = (messageParsed: JoinMessage, ws: WebSocket) => {
     const { groupId, senderUUID } = messageParsed;
     this.joinGroup(groupId, ws, senderUUID);
   };
