@@ -2,27 +2,7 @@ import WebSocket from "ws";
 import { Request, Response } from "express";
 
 import { JoinMessage, RegularMessage } from "../types";
-
-interface GroupConnections {
-  [groupId: string]: ClientInfo[];
-}
-
-/*
-const groupConnections: GroupConnections = {
-  "group1": [
-    { client: WebSocket1, uuid: "uuid1" },
-    { client: WebSocket2, uuid: "uuid2" }
-  ],
-  "group2": [
-    { client: WebSocket3, uuid: "uuid3" }
-  ]
-};
-*/
-
-interface ClientInfo {
-  client: WebSocket;
-  uuid: string;
-}
+import { ClientInfo, GroupConnections } from "../models/interfaces";
 
 export class MessageService {
   private static instance: MessageService;
@@ -37,23 +17,26 @@ export class MessageService {
     return MessageService.instance;
   }
 
-  public handleSocketMessage = (
+  public handleSocketMessage(
     ws: WebSocket,
     messageData: JoinMessage | RegularMessage
-  ) => {
+  ) {
     let messageParsed = JSON.parse(messageData.toString());
+    const { senderUUID } = messageParsed;
     switch (messageParsed.type) {
       case "join":
-        this.handleJoinMessage(messageParsed as JoinMessage, ws);
+        const { groupId } = messageParsed;
+        this.handleJoinMessage(groupId, senderUUID, ws);
         break;
       case "message":
-        this.handleRegularMessage(messageParsed as RegularMessage);
+        const { groupIds, text } = messageParsed;
+        this.handleRegularMessage(groupIds, text, senderUUID);
         break;
       default:
         console.log(`Unknown message type`);
         break;
     }
-  };
+  }
 
   public joinGroup(groupId: string, ws: WebSocket, uuid: string) {
     if (!this.groupConnections[groupId]) {
@@ -62,29 +45,31 @@ export class MessageService {
     this.groupConnections[groupId].push({ client: ws, uuid: uuid });
   }
 
-  public handleHTTPMessage = (req: Request, res: Response) => {
-    this.handleRegularMessage(req.body as RegularMessage);
+  public handleHTTPMessage(req: Request, res: Response) {
+    const { groupIds, text, senderUUID } = req.body;
+    this.handleRegularMessage(groupIds, text, senderUUID);
     res.json({ status: "success" });
-  };
+  }
 
-  private handleJoinMessage = (
-    { groupId, senderUUID }: JoinMessage,
+  private handleJoinMessage(
+    groupId: string,
+    senderUUID: string,
     ws: WebSocket
-  ) => {
+  ) {
     this.joinGroup(groupId, ws, senderUUID);
-  };
+  }
 
-  private handleRegularMessage = ({
-    groupIds,
-    text,
-    senderUUID,
-  }: RegularMessage) => {
+  private handleRegularMessage(
+    groupIds: string[],
+    text: string,
+    senderUUID: string
+  ) {
     if (groupIds && groupIds.length > 0) {
       this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
     } else {
       console.log(`No groupIds provided`);
     }
-  };
+  }
 
   public sendMessageToAllSenderGroupsOnce(
     groupIds: string[],
@@ -96,7 +81,7 @@ export class MessageService {
       senderUUID
     );
     uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
-      this.sendMessageIfReceiverOnline(receiverUUID, text, senderUUID);
+      this.sendMessageToOnlineRecievers(receiverUUID, text, senderUUID);
     });
   }
 
@@ -118,7 +103,7 @@ export class MessageService {
     return uniqueReceiversUUDIs;
   }
 
-  private sendMessageIfReceiverOnline(
+  private sendMessageToOnlineRecievers(
     receiverUUID: string,
     text: string,
     senderUUID: string
