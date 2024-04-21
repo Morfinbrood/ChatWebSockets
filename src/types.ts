@@ -1,14 +1,12 @@
-type JoinMessage = {
-  type: "join";
+export type JoinMessage = {
+  type: string;
   groupId: string;
+  senderUUID: string;
 };
 
-type RegularMessage = {
-  type: "message";
+export type RegularMessage = {
+  type: string;
   groupIds: string[];
   text: string;
-};
-
-export type MessageData = (JoinMessage | RegularMessage) & {
   senderUUID: string;
 };

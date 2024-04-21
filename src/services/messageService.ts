@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { Request, Response } from "express";
 
-import { MessageData } from "../types";
+import { JoinMessage, RegularMessage } from "../types";
 
 interface GroupConnections {
   [groupId: string]: ClientInfo[];
@@ -37,20 +37,35 @@ export class MessageService {
     return MessageService.instance;
   }
 
-  public handleSocketMessage = (ws: WebSocket, messageData: MessageData) => {
+  public handleSocketMessage = (
+    ws: WebSocket,
+    messageData: JoinMessage | RegularMessage
+  ) => {
     let messageParsed = JSON.parse(messageData.toString());
+    switch (messageParsed.type) {
+      case "join":
+        this.handleJoinMessage(messageParsed as JoinMessage, ws);
+        break;
+      case "message":
+        this.handleRegularMessage(messageParsed as RegularMessage);
+        break;
+      default:
+        console.log(`Unknown message type`);
+        break;
+    }
+  };
 
-    if (messageParsed.type === "join") {
-      const { groupId, senderUUID } = messageParsed;
-      this.joinGroup(groupId, ws, senderUUID);
-    } else if (messageParsed.type === "message") {
-      const { groupIds } = messageParsed;
-      if (groupIds) {
-        const { text, senderUUID } = messageParsed;
-        this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
-      }
+  handleJoinMessage = (messageParsed: JoinMessage, ws: WebSocket) => {
+    const { groupId, senderUUID } = messageParsed;
+    this.joinGroup(groupId, ws, senderUUID);
+  };
+
+  private handleRegularMessage = (messageParsed: RegularMessage) => {
+    const { groupIds, text, senderUUID } = messageParsed;
+    if (groupIds && groupIds.length > 0) {
+      this.sendMessageToAllSenderGroupsOnce(groupIds, text, senderUUID);
     } else {
-      console.log(`unknown message.type`);
+      console.log(`No groupIds provided`);
     }
   };
 
@@ -106,33 +121,3 @@ export class MessageService {
     });
   }
 }
-
-/* example values.flat.find
-this.groupConnections example
-const groupConnections = {
-  "group1": [
-    { client: "Client1", uuid: "uuid1" },
-    { client: "Client2", uuid: "uuid2" }
-  ],
-  "group2": [
-    { client: "Client3", uuid: "uuid3" }
-  ]
-};
-Object.values (this.groupConnections) result
-[
-  [
-    { client: "Client1", uuid: "uuid1" },
-    { client: "Client2", uuid: "uuid2" }
-  ],
-  [
-    { client: "Client3", uuid: "uuid3" }
-  ]
-]
- .flat() result
-[
-  { client: "Client1", uuid: "uuid1" },
-  { client: "Client2", uuid: "uuid2" },
-  { client: "Client3", uuid: "uuid3" }
-]
-
-*/
