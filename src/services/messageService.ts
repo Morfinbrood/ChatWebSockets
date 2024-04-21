@@ -91,6 +91,19 @@ export class MessageService {
     text: string,
     senderUUID: string
   ) {
+    const uniqueReceiversUUDIs = this.getUniqueReceiversUUIDs(
+      groupIds,
+      senderUUID
+    );
+    uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
+      this.sendMessageIfReceiverOnline(receiverUUID, text, senderUUID);
+    });
+  }
+
+  private getUniqueReceiversUUIDs(
+    groupIds: string[],
+    senderUUID: string
+  ): Set<string> {
     const uniqueReceiversUUDIs: Set<string> = new Set();
 
     groupIds.forEach((groupId: string) => {
@@ -102,22 +115,28 @@ export class MessageService {
       });
     });
 
-    uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
-      if (receiverUUID !== senderUUID) {
-        const [clientInfo] = Object.values(this.groupConnections)
-          .flat()
-          .filter((client) => client.uuid === receiverUUID);
-        if (clientInfo) {
-          const clientSocket = clientInfo.client;
-          if (clientSocket.readyState === WebSocket.OPEN) {
-            const messageSending = {
-              type: "message",
-              text: text,
-            };
-            clientSocket.send(JSON.stringify(messageSending));
-          }
+    return uniqueReceiversUUDIs;
+  }
+
+  private sendMessageIfReceiverOnline(
+    receiverUUID: string,
+    text: string,
+    senderUUID: string
+  ) {
+    if (receiverUUID !== senderUUID) {
+      const [clientInfo] = Object.values(this.groupConnections)
+        .flat()
+        .filter((client) => client.uuid === receiverUUID);
+      if (clientInfo) {
+        const clientSocket = clientInfo.client;
+        if (clientSocket.readyState === WebSocket.OPEN) {
+          const messageSending = {
+            type: "message",
+            text: text,
+          };
+          clientSocket.send(JSON.stringify(messageSending));
         }
       }
-    });
+    }
   }
 }
