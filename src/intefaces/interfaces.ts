@@ -14,13 +14,8 @@ export interface RegularMessage {
   senderUUID: string;
 }
 
-export interface ClientInfo {
-  client: WebSocket;
-  uuid: string;
-}
-
 export interface GroupConnections {
-  [groupId: string]: ClientInfo[];
+  [groupId: string]: Array<{ client: WebSocket; uuid: string }>;
 }
 
 /*

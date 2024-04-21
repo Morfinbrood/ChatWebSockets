@@ -4,7 +4,7 @@ import WebSocket from "ws";
 import { MessageService } from "./services/messageService";
 import cors from "cors";
 
-import { JoinMessage, RegularMessage } from "./types";
+import { JoinMessage, RegularMessage } from "./types/types";
 
 const app = express();
 const PORT = process.env.PORT || 3000;

@@ -5,7 +5,6 @@ yarn-error.log
 
 # TypeScript
 /dist/
-*.js
 *.js.map
 
 # Editor directories and files
@@ -18,3 +17,7 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Ignore all JavaScript files except client.js
+!*.js
+!client.js
