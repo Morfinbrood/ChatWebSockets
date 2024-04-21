@@ -70,7 +70,7 @@
           const message = {
             type: "join",
             groupId: groupId,
-            clientUuid: clientUuid,
+            senderUUID: clientUuid,
           };
           socket.send(JSON.stringify(message));
           connectedGroupIds.push(groupId);
@@ -90,7 +90,7 @@
           body: JSON.stringify({
             type: "message",
             groupIds: connectedGroupIds,
-            message: message,
+            text: message,
             senderUUID: clientUuid,
           }),
         });

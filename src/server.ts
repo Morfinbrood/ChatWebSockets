@@ -4,6 +4,8 @@ import WebSocket from "ws";
 import { MessageService } from "./services/messageService";
 import cors from "cors";
 
+import { MessageData } from "./types";
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -16,7 +18,7 @@ const wss = new WebSocket.Server({ server });
 const messageService = MessageService.getInstance(wss);
 
 wss.on("connection", (ws: WebSocket) => {
-  ws.on("message", (messageData: any) => {
+  ws.on("message", (messageData: MessageData) => {
     messageService.handleSocketMessage(ws, messageData);
   });
 

@@ -39,14 +39,12 @@ export class MessageService {
     let message = JSON.parse(messageData.toString());
 
     if (message.type === "join") {
-      const groupId = message.groupId;
-      const clientUuid = message.clientUuid;
-      this.joinGroup(groupId, ws, clientUuid);
+      const { groupId, senderUUID } = message;
+      this.joinGroup(groupId, ws, senderUUID);
     } else if (message.type === "message") {
-      const groupIds: string[] = message.groupIds;
+      const { groupIds, text } = message;
       if (groupIds) {
-        const text = String(message.text);
-        groupIds.forEach((groupId) =>
+        groupIds.forEach((groupId: string) =>
           this.sendGroupMessage(groupId, text, message.senderUUID)
         );
       }
@@ -56,11 +54,11 @@ export class MessageService {
   };
 
   public handleHTTPMessage = (req: Request, res: Response) => {
-    const { groupIds, message, senderUUID } = req.body;
+    const { groupIds, text, senderUUID } = req.body;
 
     if (groupIds) {
       groupIds.forEach((groupId: string) =>
-        this.sendGroupMessage(groupId, message, senderUUID)
+        this.sendGroupMessage(groupId, text, senderUUID)
       );
     }
 
@@ -74,11 +72,7 @@ export class MessageService {
     this.groupConnections[groupId].push({ client: ws, uuid: uuid });
   }
 
-  public sendGroupMessage(
-    groupId: string,
-    message: string,
-    senderUUID: string
-  ) {
+  public sendGroupMessage(groupId: string, text: string, senderUUID: string) {
     const connections = this.groupConnections[groupId] || [];
     const receivers = connections.filter(
       (clientInfo) => clientInfo.uuid !== senderUUID
@@ -88,7 +82,7 @@ export class MessageService {
       if (clientSocket.readyState === WebSocket.OPEN) {
         const messageSending = {
           type: "message",
-          text: message,
+          text: text,
         };
         clientSocket.send(JSON.stringify(messageSending));
       }
