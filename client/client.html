@@ -8,15 +8,17 @@
   </head>
   <body>
     <div id="chatWindow"></div>
-    <input type="text" id="messageInput" placeholder="Enter your message" />
-    <button onclick="sendMessage()">Send WS message</button>
-    <button onclick="sendHttpRequest()">Send HTTP message</button>
+
+    <button id="handleUpgradeBtn" onclick="upgradeConnection()">Upgrade</button>
+
+    <input type="text" id="messageInput" placeholder="Enter your message" disabled />
+    <button id="sendWSMessageBtn" onclick="sendMessage()" disabled>Send WS message</button>
+    <button id="sendHTTPMessageBtn" onclick="sendHttpRequest()" disabled>Send HTTP message</button>
 
     <br /><br />
 
-    <input type="text" id="groupInput" placeholder="Enter group" />
-    <button onclick="addToGroup()">Add to Group</button>
-
+    <input type="text" id="groupInput" placeholder="Enter group" disabled />
+    <button id="addToGroupBtn" onclick="addToGroup()" disabled>Add to Group</button>
     <div id="connectedGroups">Connected groups:</div>
 
     <script src="scripts/client.js"></script>

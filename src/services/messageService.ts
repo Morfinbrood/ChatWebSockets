@@ -36,6 +36,7 @@ export class MessageService {
   }
 
   public joinGroup(groupId: string, ws: WebSocket, uuid: string) {
+    console.log(` join client uuid: ${uuid} to groupId: ${groupId}`);
     if (!this.groupConnections[groupId]) {
       this.groupConnections[groupId] = [];
     }
@@ -110,6 +111,9 @@ example data: GroupConnections = {
             type: "message",
             text: text,
           };
+          console.log(
+            `sendMessageToOnlineRecievers: text: ${text} receiverUUID: ${receiverUUID}  senderUUID: ${senderUUID}`
+          );
           clientSocket.send(JSON.stringify(messageSending));
         }
       }

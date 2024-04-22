@@ -2,27 +2,56 @@ function generateSimpleUUID() {
     return Math.random().toString(36).substr(2, 9);
 }
 
-const clientUuid = generateSimpleUUID();
-const socket = new WebSocket("ws://localhost:3000");
-const chatWindow = document.getElementById("chatWindow");
-const groupInput = document.getElementById("groupInput");
-const connectedGroups = document.getElementById("connectedGroups");
+let clientUuid = generateSimpleUUID();
+let socket = null;
 let connectedGroupIds = [];
 
-socket.addEventListener("open", () => {
-    console.log("Connected to WebSocket server");
-});
+function activateChatButtons() {
+    document.getElementById("messageInput").disabled = false;
+    document.getElementById("sendWSMessageBtn").disabled = false;
+    document.getElementById("sendHTTPMessageBtn").disabled = false;
+    document.getElementById("groupInput").disabled = false;
+    document.getElementById("addToGroupBtn").disabled = false;
+}
 
-socket.addEventListener("message", (event) => {
-    const message = JSON.parse(event.data);
-    if (message.type === "message") {
-        const messageElement = document.createElement("div");
-        messageElement.innerText = String(message.text);
-        chatWindow.appendChild(messageElement);
+function deactivateChatButtons() {
+    document.getElementById("messageInput").disabled = true;
+    document.getElementById("sendWSMessageBtn").disabled = true;
+    document.getElementById("sendHTTPMessageBtn").disabled = true;
+    document.getElementById("groupInput").disabled = true;
+    document.getElementById("addToGroupBtn").disabled = true;
+}
+
+function upgradeConnection() {
+    socket = new WebSocket("ws://localhost:3000/handleUpgrade");
+
+    socket.addEventListener("open", () => {
+        console.log("Connection successfully upgraded to WebSocket!");
+        activateChatButtons();
+        document.getElementById("handleUpgradeBtn").style.display = "none";
+
+        const upgradeMessage = "Connection successfully upgraded to WebSocket!";
+        const upgradeMessageElement = document.createElement("div");
+        upgradeMessageElement.style.fontStyle = "italic";
+        upgradeMessageElement.innerText = upgradeMessage;
+        chatWindow.appendChild(upgradeMessageElement);
         chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-});
+    });
 
+    socket.addEventListener("message", (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === "message") {
+            const messageElement = document.createElement("div");
+            messageElement.innerText = String(message.text);
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    });
+
+    socket.addEventListener("error", (error) => {
+        console.error("WebSocket connection error:", error);
+    });
+}
 function sendMessage() {
     const messageInput = document.getElementById("messageInput");
     const message = {
@@ -37,6 +66,7 @@ function sendMessage() {
 
 function addToGroup() {
     const groupId = groupInput.value.trim();
+    const groupsElement = document.getElementById("connectedGroups");
     if (groupId !== "") {
         const message = {
             type: "join",
@@ -45,7 +75,7 @@ function addToGroup() {
         };
         socket.send(JSON.stringify(message));
         connectedGroupIds.push(groupId);
-        connectedGroups.innerText += ` ${groupId},`;
+        groupsElement.innerText += ` ${groupId},`;
         groupInput.value = "";
     }
 }
