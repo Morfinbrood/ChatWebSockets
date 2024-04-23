@@ -64,7 +64,7 @@ export class MessageService {
   public sendMessageToAllSenderGroupsOnce(groupIds: string[], text: string, senderUUID: string) {
     const uniqueReceiversUUDIs = this.getUniqueReceiversFromAllSenderGroups(groupIds, senderUUID);
     uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
-      this.sendMessageToOnlineRecievers(receiverUUID, text, senderUUID);
+      this.sendMessageToOnlineRecieversExceptSender(receiverUUID, text, senderUUID);
     });
   }
 
@@ -99,24 +99,26 @@ example data: GroupConnections = {
     return uniqueReceiversUUIDs;
   }
 
-  private sendMessageToOnlineRecievers(receiverUUID: string, text: string, senderUUID: string) {
-    if (receiverUUID !== senderUUID) {
-      const [clientInfo] = Object.values(this.groupConnections)
-        .flat()
-        .filter((client) => client.uuid === receiverUUID);
-      if (clientInfo) {
-        const clientSocket = clientInfo.client;
-        if (clientSocket.readyState === WebSocket.OPEN) {
-          const messageSending = {
-            type: "message",
-            text: text,
-          };
-          console.log(
-            `sendMessageToOnlineRecievers: text: ${text} receiverUUID: ${receiverUUID}  senderUUID: ${senderUUID}`
-          );
-          clientSocket.send(JSON.stringify(messageSending));
-        }
-      }
-    }
+  private sendMessageToOnlineRecieversExceptSender(receiverUUID: string, text: string, senderUUID: string) {
+    if (receiverUUID === senderUUID) return;
+
+    const wsClient = this.getSocketClientByUuid(receiverUUID, this.groupConnections);
+    if (!wsClient) return;
+
+    if (wsClient.readyState !== WebSocket.OPEN) return;
+
+    const messageSending = {
+      type: "message",
+      text: text,
+    };
+    console.log(`sendMessageToOnlineRecievers: text: ${text} receiverUUID: ${receiverUUID}  senderUUID: ${senderUUID}`);
+    wsClient.send(JSON.stringify(messageSending));
+  }
+
+  private getSocketClientByUuid(uuid: string, groupConnections: GroupConnections) {
+    const [wsSocketClient] = Object.values(groupConnections)
+      .flat()
+      .filter((client) => client.uuid === uuid);
+    return wsSocketClient.client;
   }
 }
