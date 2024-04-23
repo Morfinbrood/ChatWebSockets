@@ -68,22 +68,6 @@ export class MessageService {
     });
   }
 
-  /*
-example data: GroupConnections = {
-  "group1": [
-    { client: WebSocket1, uuid: "uuid1" },
-    { client: WebSocket2, uuid: "uuid2" }
-  ],
-  "group2": [
-    { client: WebSocket1, uuid: "uuid1" },
-    { client: WebSocket2, uuid: "uuid2" }
-  ],
-  "group3": [
-    { client: WebSocket1, uuid: "uuid1" }
-  ],
-};
-*/
-
   private getUniqueReceiversFromAllSenderGroupsExceptSender(groupIds: string[], senderUUID: string): Set<string> {
     const uniqueReceiversUUIDs: Set<string> = new Set();
 
@@ -120,3 +104,19 @@ example data: GroupConnections = {
     return wsSocketClient.client;
   }
 }
+
+/*
+example data: GroupConnections = {
+  "group1": [
+    { client: WebSocket1, uuid: "uuid1" },
+    { client: WebSocket2, uuid: "uuid2" }
+  ],
+  "group2": [
+    { client: WebSocket1, uuid: "uuid1" },
+    { client: WebSocket2, uuid: "uuid2" }
+  ],
+  "group3": [
+    { client: WebSocket1, uuid: "uuid1" }
+  ],
+};
+*/
