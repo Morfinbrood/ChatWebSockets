@@ -62,9 +62,9 @@ export class MessageService {
   }
 
   public sendMessageToAllSenderGroupsOnce(groupIds: string[], text: string, senderUUID: string) {
-    const uniqueReceiversUUDIs = this.getUniqueReceiversFromAllSenderGroups(groupIds, senderUUID);
+    const uniqueReceiversUUDIs = this.getUniqueReceiversFromAllSenderGroupsExceptSender(groupIds, senderUUID);
     uniqueReceiversUUDIs.forEach((receiverUUID: string) => {
-      this.sendMessageToOnlineRecieversExceptSender(receiverUUID, text, senderUUID);
+      this.sendMessageToOnlineRecievers(receiverUUID, text, senderUUID);
     });
   }
 
@@ -84,7 +84,7 @@ example data: GroupConnections = {
 };
 */
 
-  private getUniqueReceiversFromAllSenderGroups(groupIds: string[], senderUUID: string): Set<string> {
+  private getUniqueReceiversFromAllSenderGroupsExceptSender(groupIds: string[], senderUUID: string): Set<string> {
     const uniqueReceiversUUIDs: Set<string> = new Set();
 
     groupIds.forEach((groupId) => {
@@ -99,9 +99,7 @@ example data: GroupConnections = {
     return uniqueReceiversUUIDs;
   }
 
-  private sendMessageToOnlineRecieversExceptSender(receiverUUID: string, text: string, senderUUID: string) {
-    if (receiverUUID === senderUUID) return;
-
+  private sendMessageToOnlineRecievers(receiverUUID: string, text: string, senderUUID: string) {
     const wsClient = this.getSocketClientByUuid(receiverUUID, this.groupConnections);
     if (!wsClient) return;
 
