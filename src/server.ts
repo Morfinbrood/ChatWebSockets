@@ -3,6 +3,8 @@ import http from "http";
 import WebSocket from "ws";
 import { MessageService } from "./services/messageService";
 import cors from "cors";
+import { upgradeMiddleware } from "./middleware/upgradeMiddleware";
+import messageRoutes from "./routes/messageRoutes";
 
 import { JoinMessage, RegularMessage } from "./types/types";
 
@@ -25,23 +27,9 @@ wss.on("connection", (ws: WebSocket) => {
   });
 });
 
-server.on("upgrade", (request, socket, head) => {
-  console.log(`get request to handleUpgrade`);
-  if (request.url === "/handleUpgrade" && request.method === "GET") {
-    wss.handleUpgrade(request, socket, head, (connection) => {
-      console.log("Connection upgraded");
-      wss.emit("connection", connection, request);
-    });
-  } else {
-    socket.write("HTTP/1.1 400 Bad Request\r\n\r\n");
-    socket.destroy();
-  }
-});
+server.on("upgrade", upgradeMiddleware(wss));
 
-app.post("/sendHTTPMessage", (req, res) => {
-  console.log(` POST /sendHTTPMessage req.body: ${req.body}`);
-  messageService.handleHTTPMessage(req, res);
-});
+app.use(messageRoutes(wss));
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
