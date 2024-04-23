@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request } from "express";
 import WebSocket from "ws";
 
 export const upgradeMiddleware = (wss: WebSocket.Server) => (req: Request, socket: any, head: Buffer) => {
