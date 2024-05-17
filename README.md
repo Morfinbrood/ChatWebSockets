@@ -5,3 +5,9 @@ Create a simple websocket server that would receive a message and send it to all
 Cover it with test
 
 Stack: TypeScript, Express, WebSockets
+
+How to use:
+build
+start
+
+open index.html in folder Client
