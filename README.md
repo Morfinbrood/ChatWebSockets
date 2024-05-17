@@ -7,7 +7,9 @@ Cover it with test
 Stack: TypeScript, Express, WebSockets
 
 How to use:
-build
-start
+Start Server:
+npm build
+npm start
 
+Start client:
 open index.html in folder Client
